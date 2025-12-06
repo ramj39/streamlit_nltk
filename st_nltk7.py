@@ -84,7 +84,7 @@ if uploaded_file is not None:
     mode = st.radio("Choose extraction mode:", ["By Sentences", "By Lines"])
 
     if mode == "By Sentences":
-    if text.strip():
+       if text.strip():
         sentences = sent_tokenize(text)
         st.write(f"Detected {len(sentences)} sentences.")
 

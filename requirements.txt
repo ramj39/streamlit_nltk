@@ -1,6 +1,6 @@
 streamlit
 nltk
-docx
+python-docx
 PyPDF2
 pdfplumber
 matplotlib

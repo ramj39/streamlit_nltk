@@ -1,4 +1,5 @@
 import streamlit as st
+from docx import Document
 import io
 import nltk
 from nltk.tokenize import sent_tokenize

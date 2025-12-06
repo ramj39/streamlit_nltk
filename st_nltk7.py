@@ -1,5 +1,4 @@
 import streamlit as st
-from docx import Document
 import io
 import nltk
 from nltk.tokenize import sent_tokenize
@@ -9,11 +8,8 @@ import pandas as pd
 from gtts import gTTS
 import base64
 
-# Ensure punkt is available
-try:
-    nltk.data.find("tokenizers/punkt")
-except LookupError:
-    nltk.download("punkt")
+# Ensure punkt is available every run
+nltk.download("punkt", quiet=True)
 
 st.title("Multi‑Format Text Extractor with Speech")
 
@@ -44,7 +40,7 @@ def speak_and_download(selected_text: str):
     # Play audio
     st.audio(audio_bytes, format="audio/mp3")
 
-    # Download link
+    # Provide download link
     b64 = base64.b64encode(audio_bytes.read()).decode()
     href = f'<a href="data:audio/mp3;base64,{b64}" download="speech.mp3">Download MP3</a>'
     st.markdown(href, unsafe_allow_html=True)
@@ -84,24 +80,6 @@ if uploaded_file is not None:
     mode = st.radio("Choose extraction mode:", ["By Sentences", "By Lines"])
 
     if mode == "By Sentences":
-       if text.strip():
-        sentences = sent_tokenize(text)
-        st.write(f"Detected {len(sentences)} sentences.")
-
-        start_idx = st.number_input("Start sentence", 1, len(sentences), 1)
-        end_idx = st.number_input("End sentence", start_idx, len(sentences), min(start_idx+9, len(sentences)))
-        selected = sentences[start_idx-1:end_idx]
-
-        st.subheader(f"Sentences {start_idx} to {end_idx}:")
-        for i, s in enumerate(selected, start=start_idx):
-            st.write(f"{i}. {s}")
-
-        if st.button("Speak Selected Sentences"):
-            speak_and_download("\n".join(selected))
-    else:
-        st.warning("No text available to split into sentences.")
-  
-    '''if mode == "By Sentences":
         sentences = sent_tokenize(text)
         st.write(f"Detected {len(sentences)} sentences.")
 
@@ -118,7 +96,7 @@ if uploaded_file is not None:
 
     else:  # Line mode
         lines = text.splitlines()
-        st.write(f"Detected {len(lines)} lines.")'''
+        st.write(f"Detected {len(lines)} lines.")
 
         start_idx = st.number_input("Start line", 1, len(lines), 1)
         end_idx = st.number_input("End line", start_idx, len(lines), min(start_idx+9, len(lines)))

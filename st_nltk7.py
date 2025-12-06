@@ -84,6 +84,24 @@ if uploaded_file is not None:
     mode = st.radio("Choose extraction mode:", ["By Sentences", "By Lines"])
 
     if mode == "By Sentences":
+    if text.strip():
+        sentences = sent_tokenize(text)
+        st.write(f"Detected {len(sentences)} sentences.")
+
+        start_idx = st.number_input("Start sentence", 1, len(sentences), 1)
+        end_idx = st.number_input("End sentence", start_idx, len(sentences), min(start_idx+9, len(sentences)))
+        selected = sentences[start_idx-1:end_idx]
+
+        st.subheader(f"Sentences {start_idx} to {end_idx}:")
+        for i, s in enumerate(selected, start=start_idx):
+            st.write(f"{i}. {s}")
+
+        if st.button("Speak Selected Sentences"):
+            speak_and_download("\n".join(selected))
+    else:
+        st.warning("No text available to split into sentences.")
+  
+    '''if mode == "By Sentences":
         sentences = sent_tokenize(text)
         st.write(f"Detected {len(sentences)} sentences.")
 
@@ -100,7 +118,7 @@ if uploaded_file is not None:
 
     else:  # Line mode
         lines = text.splitlines()
-        st.write(f"Detected {len(lines)} lines.")
+        st.write(f"Detected {len(lines)} lines.")'''
 
         start_idx = st.number_input("Start line", 1, len(lines), 1)
         end_idx = st.number_input("End line", start_idx, len(lines), min(start_idx+9, len(lines)))

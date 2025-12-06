@@ -1,7 +1,6 @@
 import streamlit as st
 import io
 import nltk
-from nltk.tokenize import sent_tokenize
 import PyPDF2
 from docx import Document
 import pandas as pd
@@ -76,23 +75,22 @@ if uploaded_file is not None:
         st.warning("No extractable text found.")
         st.stop()
 
-    # Toggle between sentence mode and line mode
-    #mode = st.radio("Choose extraction mode:", ["By Sentences", "By Lines"])
+    # Line mode only
+    lines = text.splitlines()
+    st.write(f"Detected {len(lines)} lines.")
 
-lines = text.splitlines()
-st.write(f"Detected {len(lines)} lines.")
+    start_idx = st.number_input("Start line", 1, len(lines), 1)
+    end_idx = st.number_input("End line", start_idx, len(lines), min(start_idx+9, len(lines)))
+    selected = lines[start_idx-1:end_idx]
 
-start_idx = st.number_input("Start line", 1, len(lines), 1)
-end_idx = st.number_input("End line", start_idx, len(lines), min(start_idx+9, len(lines)))
-selected = lines[start_idx-1:end_idx]
+    st.subheader(f"Lines {start_idx} to {end_idx}:")
+    for i, s in enumerate(selected, start=start_idx):
+        st.write(f"{i}. {s}")
 
-st.subheader(f"Lines {start_idx} to {end_idx}:")
-for i, s in enumerate(selected, start=start_idx):
-    st.write(f"{i}. {s}")
+    if st.button("Speak Selected Lines"):
+        speak_and_download("\n".join(selected))
+else:
+    st.info("Upload a file to extract lines.")
 
-if st.button("Speak Selected Lines"):
-    speak_and_download("\n".join(selected))
-
-        
 st.info("Developed by Subramanian Ramajayam")
 st.snow()

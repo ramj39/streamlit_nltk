@@ -22,12 +22,31 @@ uploaded_file = st.file_uploader(
 )
 
 def safe_decode(raw_bytes: bytes) -> str:
+    """Try multiple encodings for robustness."""
     for enc in ("utf-8", "utf-8-sig", "latin-1"):
         try:
             return raw_bytes.decode(enc)
         except UnicodeDecodeError:
             continue
     return raw_bytes.decode("utf-8", errors="replace")
+
+def speak_and_download(selected_text: str):
+    """Convert text to speech, play audio, and provide download link."""
+    if not selected_text.strip():
+        st.warning("No text selected for speech.")
+        return
+    tts = gTTS(selected_text)
+    audio_bytes = io.BytesIO()
+    tts.write_to_fp(audio_bytes)
+    audio_bytes.seek(0)
+
+    # Play audio
+    st.audio(audio_bytes, format="audio/mp3")
+
+    # Download link
+    b64 = base64.b64encode(audio_bytes.read()).decode()
+    href = f'<a href="data:audio/mp3;base64,{b64}" download="speech.mp3">Download MP3</a>'
+    st.markdown(href, unsafe_allow_html=True)
 
 if uploaded_file is not None:
     text = ""
@@ -39,8 +58,11 @@ if uploaded_file is not None:
 
     # Handle PDF
     elif uploaded_file.type == "application/pdf":
-        reader = PyPDF2.PdfReader(uploaded_file)
-        text = "\n".join([page.extract_text() or "" for page in reader.pages])
+        try:
+            reader = PyPDF2.PdfReader(uploaded_file)
+            text = "\n".join([page.extract_text() or "" for page in reader.pages])
+        except Exception as e:
+            st.error(f"Error reading PDF: {e}")
 
     # Handle DOCX
     elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
@@ -72,6 +94,9 @@ if uploaded_file is not None:
         for i, s in enumerate(selected, start=start_idx):
             st.write(f"{i}. {s}")
 
+        if st.button("Speak Selected Sentences"):
+            speak_and_download("\n".join(selected))
+
     else:  # Line mode
         lines = text.splitlines()
         st.write(f"Detected {len(lines)} lines.")
@@ -83,7 +108,9 @@ if uploaded_file is not None:
         st.subheader(f"Lines {start_idx} to {end_idx}:")
         for i, s in enumerate(selected, start=start_idx):
             st.write(f"{i}. {s}")
-        if st.button("Speak Selected"):
-            selected_text = "\n".join(selected)
-st.info("developed by Subramanian Ramajayam")
+
+        if st.button("Speak Selected Lines"):
+            speak_and_download("\n".join(selected))
+
+st.info("Developed by Subramanian Ramajayam")
 st.snow()
